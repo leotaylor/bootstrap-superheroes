@@ -17,6 +17,12 @@ h2{
     height: 450px;
 }
 
+.jobs{
+    height: 50px;
+    background-color: silver;
+    color: #E23636;
+}
+
 .charDescription{
     color: #E23636;
 }
