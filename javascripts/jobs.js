@@ -4,17 +4,17 @@ const printToDom = (domString, divId) => {
     document.getElementById(divId).innerHTML = domString;
 };
 
-const buildDomString = (heroArray) => {
+const buildDomString = (heroes) => {
     let domString = "";
-    for(let i=0; i<heroArray.length; i++){
+    for(let i=0; i<heroes.length; i++){
         domString += `<li>`;
-        domString += `<a class="hero-name" data-hero-id="${heroArray[i].id}">${heroArray[i].name}</a>`;
+        domString += `<a class="hero-name" data-hero-id="${heroes[i].id}">${heroes[i].name}</a>`;
         domString += `</li>`;
     }
     printToDom(domString, 'awesome-dropdown');
-}
+};
 
-const selectHero = (e) => {
+const selectHero = e => {
     selectedHero = e.target.dataset.heroId;
     document.getElementById("awesome-button").classList.add("hide");
     genericHeroRequest(loadfileforSingleHero);
@@ -34,13 +34,9 @@ const displaySuperhero = heroes => {
         domString += `<div class="row">`;
         domString += `<div class="col-sm-4">`;
         if (hero.gender === "Male") {
-          domString += `<img class="charImage maleImage" src="${
-            hero.image
-          }">`;
+          domString += `<img class="charImage maleCharImage" src="${hero.image}">`;
         } else {
-          domString += `<img class="charImage femaleImage" src="${
-            hero.image
-          }">`;
+          domString += `<img class="charImage femaleCharImage" src="${hero.image}">`;
         }
         domString += `</div>`;
         domString += `<div class="col-sm-6">`;
@@ -50,7 +46,56 @@ const displaySuperhero = heroes => {
       }
     });
     printToDom(domString, "selected-hero");
+    getJobs(heroes);
   };
+
+const displayJobs = (heroes) => {
+    let domString = "";
+    domString += `<h2>Possible Jobs:</h2>`;
+    domString += `<br><br>`;
+    heroes.forEach(hero => {
+        if (hero.id === selectedHero) {
+            hero.jobs.forEach((job) =>{
+            domString += `<div class="col-sm-4">`;
+            domString += `<div class="panel jobs">`;
+            domString += `<div class="panel-body">`;
+            domString +=    `<p>${job}</p>`;
+            domString += `</div>`;
+            domString += `</div>`;
+            domString += `</div>`;
+            })
+        }
+    });
+    printToDom(domString, "jobs");
+}
+
+const megaSmash = (jobsArray, heroesArray) => {
+    heroesArray.forEach((hero) => {
+        hero.jobs = [];
+        hero.jobIds.forEach((jobId) =>{
+            jobsArray.forEach((job) => {
+                if(job.id === jobId){
+                    hero.jobs.push(job.title);
+                }
+            })
+        })
+    })
+    return heroesArray;
+};
+
+const getJobs = (heroesArray) =>{
+    let jobsRequest = new XMLHttpRequest();
+    jobsRequest.addEventListener("load", jobsJSONConvert);
+    jobsRequest.addEventListener("error", executeThisCodeIfXHRFails);
+    jobsRequest.open("GET", "../db/jobs.json");
+    jobsRequest.send();
+
+    function jobsJSONConvert() {
+        const jobsData = JSON.parse(this.responseText).jobs;
+        const completeHeroes = megaSmash(jobsData, heroesArray);
+        displayJobs(completeHeroes);
+    }
+}
 
 function loadfileforSingleHero(){
     const data = JSON.parse(this.responseText);
